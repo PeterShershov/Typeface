@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+
+:root {
+  /* Windows 95 uses system-style sans; mono kept for ASCII previews */
+  --family-body: 'MS Sans Serif', Tahoma, Geneva, Verdana, 'Segoe UI', sans-serif;
+  --family-mono: 'JetBrains Mono', 'Courier New', monospace;
+
+  /* ---- Windows 95 raw palette ---- */
+  --win-desktop: #008080; /* classic teal desktop */
+  --win-face: #c0c0c0; /* silver control face */
+  --win-face-light: #dfdfdf;
+  --win-highlight: #ffffff;
+  --win-shadow: #808080;
+  --win-dark: #000000;
+  --win-titlebar: #000080; /* active title navy */
+  --win-titlebar-grad: linear-gradient(90deg, #000080 0%, #1084d0 100%);
+  --win-titlebar-text: #ffffff;
+  --win-selection: #000080;
+  --win-selection-text: #ffffff;
+
+  /* 3D bevel presets */
+  --bevel-out:
+    inset -1px -1px 0 #000000,
+    inset 1px 1px 0 #ffffff,
+    inset -2px -2px 0 #808080,
+    inset 2px 2px 0 #dfdfdf;
+  --bevel-in:
+    inset 1px 1px 0 #808080,
+    inset -1px -1px 0 #ffffff,
+    inset 2px 2px 0 #000000,
+    inset -2px -2px 0 #dfdfdf;
+  --bevel-out-thin:
+    inset -1px -1px 0 #808080,
+    inset 1px 1px 0 #ffffff;
+  --bevel-in-thin:
+    inset 1px 1px 0 #808080,
+    inset -1px -1px 0 #ffffff;
+
+  /* ---- Semantic aliases (reused across components) ---- */
+  --color-bg: var(--win-desktop);
+  --color-bg-surface: var(--win-face);
+  --color-bg-elevated: var(--win-face);
+  --color-border: var(--win-shadow);
+  --color-border-subtle: var(--win-shadow);
+
+  --color-primary: var(--win-selection);
+  --color-primary-dim: var(--win-selection);
+  --color-primary-glow: #d4d0c8;
+
+  --color-text: #000000;
+  --color-text-muted: #000000;
+  --color-text-subtle: #404040;
+  --color-text-accent: #000080;
+
+  /* Win95 has square corners */
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-full: 0;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-lg: 15px;
+
+  --shadow-sm: 1px 1px 0 rgba(0, 0, 0, 0.35);
+  --shadow-md: 2px 2px 0 rgba(0, 0, 0, 0.4);
+  --shadow-glow: none;
+}

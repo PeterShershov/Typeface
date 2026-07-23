@@ -1,0 +1,115 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--color-bg);
+  /* Outer window frame bevel */
+  border: 1px solid var(--win-dark);
+  box-shadow: var(--bevel-out);
+}
+
+.hiddenVideo {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 1px;
+  height: 1px;
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  padding: var(--space-1);
+  gap: var(--space-1);
+}
+
+.canvasWrapper {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Sunken "screen" area */
+  box-shadow: var(--bevel-in);
+  background: #000000;
+}
+
+/* Gallery (installation) mode */
+.gallery {
+  border: none;
+  box-shadow: none;
+}
+
+.gallery .main {
+  flex-direction: column;
+  padding: 0;
+}
+
+.gallery .canvasWrapper {
+  box-shadow: none;
+}
+
+.galleryControls {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  display: flex;
+  gap: var(--space-2);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.canvasWrapper:hover .galleryControls {
+  opacity: 1;
+}
+
+.galleryBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 30px;
+  color: var(--win-dark);
+  background: var(--win-face);
+  box-shadow: var(--bevel-out);
+  cursor: pointer;
+}
+
+.galleryBtn:active {
+  box-shadow: var(--bevel-in);
+}
+
+.backdrop {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .layout {
+    position: fixed;
+    inset: 0;
+    border: none;
+    box-shadow: none;
+  }
+
+  .main {
+    position: absolute;
+    inset: 0;
+    padding: 0;
+    gap: 0;
+  }
+
+  .canvasWrapper {
+    box-shadow: none;
+  }
+
+  .backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: transparent;
+  }
+}

@@ -1,0 +1,29 @@
+.bar {
+  position: absolute;
+  bottom: var(--space-3);
+  left: var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  background: var(--win-face);
+  box-shadow: var(--bevel-out);
+  font-size: var(--text-sm);
+  color: var(--win-dark);
+  pointer-events: none;
+  font-family: var(--family-body);
+}
+
+.error {
+  color: #7a0000;
+  font-weight: 700;
+  max-width: 300px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  background: #7a0000;
+  box-shadow: var(--bevel-out-thin);
+}

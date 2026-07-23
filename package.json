@@ -1,0 +1,42 @@
+{
+  "name": "project",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "react-router build",
+    "dev": "react-router dev",
+    "start": "react-router-serve ./build/server/index.js",
+    "typecheck": "react-router typegen && tsc"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.4.0",
+    "@react-router/node": "^8.2.0",
+    "@react-router/serve": "^8.2.0",
+    "@tabler/icons-react": "^3.44.0",
+    "classnames": "^2.5.1",
+    "isbot": "^5.2.0",
+    "radix-ui": "^1.6.2",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-hook-form": "^7.81.0",
+    "react-router": "^8.2.0",
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "@react-router/dev": "^8.2.0",
+    "@types/node": "24",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.185.1",
+    "prettier": "^3.9.5",
+    "typescript": "~6.0.3",
+    "vite": "^8.1.4"
+  },
+  "allowScripts": {
+    "fsevents": true
+  },
+  "prettier": {
+    "printWidth": 120,
+    "endOfLine": "auto"
+  }
+}
