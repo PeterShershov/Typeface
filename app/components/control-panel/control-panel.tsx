@@ -120,7 +120,6 @@ export function ControlPanel({
   const [density, setDensity] = useState(params.density);
   const [brightness, setBrightness] = useState(params.brightness);
   const [contrast, setContrast] = useState(params.contrast);
-  const [saturation, setSaturation] = useState(params.saturation);
   const [glow, setGlow] = useState(params.glow);
   const [customWord, setCustomWord] = useState(params.customWord);
   const [crtIntensity, setCrtIntensity] = useState(params.crtIntensity);
@@ -210,23 +209,6 @@ export function ControlPanel({
 
       <div className={styles.section}>
         <span className={styles.sectionTitle}>Image</span>
-
-        <div className={styles.control}>
-          <label className={styles.label}>
-            <span>Saturation</span>
-            <span className={styles.value}>{saturation.toFixed(2)}×</span>
-          </label>
-          <input
-            type="range"
-            min={0}
-            max={2}
-            step={0.05}
-            value={saturation}
-            onChange={makeHandler(setSaturation, "saturation")}
-            className={styles.slider}
-            aria-label="Saturation"
-          />
-        </div>
 
         <div className={styles.control}>
           <label className={styles.label}>

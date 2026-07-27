@@ -4,9 +4,6 @@
   height: 100vh;
   overflow: hidden;
   background: var(--color-bg);
-  /* Outer window frame bevel */
-  border: 1px solid var(--win-dark);
-  box-shadow: var(--bevel-out);
 }
 
 .hiddenVideo {

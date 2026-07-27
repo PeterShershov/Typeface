@@ -14,10 +14,10 @@
   --win-dark: #e6e6e6; /* ink: text and hard outlines */
   --win-field: #232323; /* sunken input surfaces */
   --win-text-dim: #8a8a8a; /* muted, disabled, placeholder text */
-  --win-titlebar: #000080; /* active title navy */
-  --win-titlebar-grad: linear-gradient(90deg, #000080 0%, #1084d0 100%);
+  --win-titlebar: #00ff51; /* active title navy */
+  --win-titlebar-grad: linear-gradient(90deg, #00ff51 0%, #1084d0 100%);
   --win-titlebar-text: #ffffff;
-  --win-selection: #000080;
+  --win-selection: #00ff51;
   --win-selection-text: #ffffff;
 
   /* 3D bevel presets */
