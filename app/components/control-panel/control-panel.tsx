@@ -41,8 +41,8 @@ const COLOR_OPTIONS: { value: ColorMode; label: string; swatch: string }[] = [
 ];
 
 const CHAR_SET_OPTIONS: { value: CharSet; label: string; preview: string }[] = [
-  { value: "standard", label: "Classic", preview: "freedom" },
-  { value: "detailed", label: "Detailed", preview: "freedom" },
+  { value: "standard", label: "Classic", preview: "@#S%?*+;:,." },
+  { value: "detailed", label: "Detailed", preview: "$@B%8&WM#*oahkbdpqwmZO0Q" },
   { value: "blocks", label: "Blocks", preview: "█▓▒░" },
   { value: "minimal", label: "Dots", preview: "●◉○" },
   { value: "binary", label: "Binary", preview: "01" },
