@@ -17,6 +17,4 @@ Typeface samples the webcam, maps luminance onto a character ramp and draws it w
 ```sh
 npm install
 npm run dev
-npm run typecheck
-npm run build
 ```
