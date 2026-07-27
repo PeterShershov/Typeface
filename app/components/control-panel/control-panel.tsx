@@ -127,10 +127,10 @@ export function ControlPanel({
   const [crtSensitivity, setCrtSensitivity] = useState(params.crtSensitivity);
   const [crtDensity, setCrtDensity] = useState(params.crtDensity);
   const [crtOpen, setCrtOpen] = useState(false);
-  const [dmtIntensity, setDmtIntensity] = useState(params.dmtIntensity);
-  const [dmtOpen, setDmtOpen] = useState(false);
-  const [psyIntensity, setPsyIntensity] = useState(params.psyIntensity);
-  const [psyOpen, setPsyOpen] = useState(false);
+  const [meltIntensity, setMeltIntensity] = useState(params.meltIntensity);
+  const [meltOpen, setMeltOpen] = useState(false);
+  const [morphIntensity, setMorphIntensity] = useState(params.morphIntensity);
+  const [morphOpen, setMorphOpen] = useState(false);
   const prevCharSetRef = useRef<CharSet>(params.charSet !== "custom" ? params.charSet : "standard");
   if (params.charSet !== "custom") {
     prevCharSetRef.current = params.charSet;
@@ -168,23 +168,23 @@ export function ControlPanel({
     [onParamChange],
   );
 
-  const handleDmtToggle = useCallback(
+  const handleMeltToggle = useCallback(
     (checked: boolean) => {
-      onParamChange({ dmtEnabled: checked });
+      onParamChange({ meltEnabled: checked });
     },
     [onParamChange],
   );
 
-  const handlePsyToggle = useCallback(
+  const handleMorphToggle = useCallback(
     (checked: boolean) => {
-      onParamChange({ psyEnabled: checked });
+      onParamChange({ morphEnabled: checked });
     },
     [onParamChange],
   );
 
-  const handlePsyHueDriftToggle = useCallback(
+  const handleMorphHueDriftToggle = useCallback(
     (checked: boolean) => {
-      onParamChange({ psyHueDrift: checked });
+      onParamChange({ morphHueDrift: checked });
     },
     [onParamChange],
   );
@@ -440,38 +440,38 @@ export function ControlPanel({
           <button
             type="button"
             className={styles.sectionToggleBtn}
-            onClick={() => setDmtOpen((o) => !o)}
-            aria-expanded={dmtOpen}
+            onClick={() => setMeltOpen((o) => !o)}
+            aria-expanded={meltOpen}
           >
             <span className={styles.sectionTitle}>Mode #001</span>
-            <IconChevronDown size={16} className={`${styles.chevron} ${dmtOpen ? styles.chevronOpen : ""}`} />
+            <IconChevronDown size={16} className={`${styles.chevron} ${meltOpen ? styles.chevronOpen : ""}`} />
           </button>
           <Switch.Root
             className={styles.switchRoot}
-            checked={params.dmtEnabled}
-            onCheckedChange={handleDmtToggle}
+            checked={params.meltEnabled}
+            onCheckedChange={handleMeltToggle}
             aria-label="Toggle Mode #001"
           >
             <Switch.Thumb className={styles.switchThumb} />
           </Switch.Root>
         </div>
 
-        {dmtOpen && (
+        {meltOpen && (
           <>
             <div className={styles.control}>
               <label className={styles.label}>
                 <span>Intensity</span>
-                <span className={styles.value}>{Math.round(dmtIntensity * 100)}%</span>
+                <span className={styles.value}>{Math.round(meltIntensity * 100)}%</span>
               </label>
               <input
                 type="range"
                 min={0}
                 max={1}
                 step={0.05}
-                value={dmtIntensity}
-                onChange={makeHandler(setDmtIntensity, "dmtIntensity")}
+                value={meltIntensity}
+                onChange={makeHandler(setMeltIntensity, "meltIntensity")}
                 className={styles.slider}
-                disabled={!params.dmtEnabled}
+                disabled={!params.meltEnabled}
                 aria-label="Mode #001 intensity"
               />
               <div className={styles.sliderHints}>
@@ -488,38 +488,38 @@ export function ControlPanel({
           <button
             type="button"
             className={styles.sectionToggleBtn}
-            onClick={() => setPsyOpen((o) => !o)}
-            aria-expanded={psyOpen}
+            onClick={() => setMorphOpen((o) => !o)}
+            aria-expanded={morphOpen}
           >
             <span className={styles.sectionTitle}>Mode #002</span>
-            <IconChevronDown size={16} className={`${styles.chevron} ${psyOpen ? styles.chevronOpen : ""}`} />
+            <IconChevronDown size={16} className={`${styles.chevron} ${morphOpen ? styles.chevronOpen : ""}`} />
           </button>
           <Switch.Root
             className={styles.switchRoot}
-            checked={params.psyEnabled}
-            onCheckedChange={handlePsyToggle}
+            checked={params.morphEnabled}
+            onCheckedChange={handleMorphToggle}
             aria-label="Toggle Mode #002"
           >
             <Switch.Thumb className={styles.switchThumb} />
           </Switch.Root>
         </div>
 
-        {psyOpen && (
+        {morphOpen && (
           <>
             <div className={styles.control}>
               <label className={styles.label}>
                 <span>Intensity</span>
-                <span className={styles.value}>{Math.round(psyIntensity * 100)}%</span>
+                <span className={styles.value}>{Math.round(morphIntensity * 100)}%</span>
               </label>
               <input
                 type="range"
                 min={0}
                 max={1}
                 step={0.05}
-                value={psyIntensity}
-                onChange={makeHandler(setPsyIntensity, "psyIntensity")}
+                value={morphIntensity}
+                onChange={makeHandler(setMorphIntensity, "morphIntensity")}
                 className={styles.slider}
-                disabled={!params.psyEnabled}
+                disabled={!params.morphEnabled}
                 aria-label="Mode #002 intensity"
               />
               <div className={styles.sliderHints}>
@@ -530,15 +530,15 @@ export function ControlPanel({
 
             <div className={styles.control}>
               <div className={styles.inputRow}>
-                <label className={styles.label} style={{ flex: 1 }} htmlFor="psy-hue-drift">
+                <label className={styles.label} style={{ flex: 1 }} htmlFor="morph-hue-drift">
                   <span>Hue drift</span>
                 </label>
                 <Switch.Root
-                  id="psy-hue-drift"
+                  id="morph-hue-drift"
                   className={styles.switchRoot}
-                  checked={params.psyHueDrift}
-                  onCheckedChange={handlePsyHueDriftToggle}
-                  disabled={!params.psyEnabled}
+                  checked={params.morphHueDrift}
+                  onCheckedChange={handleMorphHueDriftToggle}
+                  disabled={!params.morphEnabled}
                   aria-label="Toggle Mode #002 hue drift"
                 >
                   <Switch.Thumb className={styles.switchThumb} />

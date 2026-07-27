@@ -101,11 +101,11 @@ export interface AsciiParams {
   crtIntensity: number;    // 0 to 1 — baseline opacity & thickness
   crtSensitivity: number;  // 0 to 1 — audio reactivity of speed & opacity
   crtDensity: number;      // 0 to 1 — number of scanlines (spacing)
-  dmtEnabled: boolean;     // audio-reactive smudge/melt feedback trails
-  dmtIntensity: number;    // 0 to 1 — strength of the smudge distortion
-  psyEnabled: boolean;     // psilocybin glyph-morph field
-  psyIntensity: number;    // 0 to 1 — strength of the character morphing
-  psyHueDrift: boolean;    // slow hue-rotation color wash tied to morph
+  meltEnabled: boolean;     // audio-reactive smudge/melt feedback trails
+  meltIntensity: number;    // 0 to 1 — strength of the smudge distortion
+  morphEnabled: boolean;     // glyph-morph wave field
+  morphIntensity: number;    // 0 to 1 — strength of the character morphing
+  morphHueDrift: boolean;    // slow hue-rotation color wash tied to morph
 }
 
 // Each language script spells the word "freedom" in its own writing system.
@@ -360,9 +360,9 @@ export function useAsciiCamera(audioAmplitudeRef?: { current: number }) {
   const crtAmpRef     = useRef(0);
   const crtTimeRef    = useRef(performance.now());
 
-  const dmtBufRef   = useRef<HTMLCanvasElement | null>(null);
-  const dmtAmpRef   = useRef(0);
-  const dmtAngleRef = useRef(0);
+  const meltBufRef   = useRef<HTMLCanvasElement | null>(null);
+  const meltAmpRef   = useRef(0);
+  const meltAngleRef = useRef(0);
 
   const animFrameRef  = useRef<number>(0);
   const streamRef     = useRef<MediaStream | null>(null);
@@ -392,11 +392,11 @@ export function useAsciiCamera(audioAmplitudeRef?: { current: number }) {
     crtIntensity: 0.5,
     crtSensitivity: 0.6,
     crtDensity: 0.5,
-    dmtEnabled: false,
-    dmtIntensity: 0.1,
-    psyEnabled: false,
-    psyIntensity: 0.6,
-    psyHueDrift: false,
+    meltEnabled: false,
+    meltIntensity: 0.1,
+    morphEnabled: false,
+    morphIntensity: 0.6,
+    morphHueDrift: false,
   });
 
   const loadCameras = useCallback(async () => {
@@ -433,10 +433,10 @@ export function useAsciiCamera(audioAmplitudeRef?: { current: number }) {
       }
     }
 
-    dmtAmpRef.current = 0;
-    if (dmtBufRef.current) {
-      const bctx = dmtBufRef.current.getContext("2d");
-      bctx?.clearRect(0, 0, dmtBufRef.current.width, dmtBufRef.current.height);
+    meltAmpRef.current = 0;
+    if (meltBufRef.current) {
+      const bctx = meltBufRef.current.getContext("2d");
+      bctx?.clearRect(0, 0, meltBufRef.current.width, meltBufRef.current.height);
     }
   }, []);
 
@@ -492,13 +492,13 @@ export function useAsciiCamera(audioAmplitudeRef?: { current: number }) {
     const animTime = performance.now() * 0.001;
     const chaosRange = Math.floor(ampSq * charCount);
 
-    const psyEnabled = params.psyEnabled;
-    const psyMorph   = params.psyIntensity * (0.55 + audioAmp * 0.9);
-    const psyHueDeg  =
-      psyEnabled && params.psyHueDrift
-        ? (animTime * (20 + audioAmp * 80) * params.psyIntensity) % 360
+    const morphEnabled = params.morphEnabled;
+    const morphAmount   = params.morphIntensity * (0.55 + audioAmp * 0.9);
+    const morphHueDeg  =
+      morphEnabled && params.morphHueDrift
+        ? (animTime * (20 + audioAmp * 80) * params.morphIntensity) % 360
         : 0;
-    const psyTime  = animTime * (0.6 + params.psyIntensity * 1.6 + audioAmp * 2.2);
+    const morphTime  = animTime * (0.6 + params.morphIntensity * 1.6 + audioAmp * 2.2);
     const cxCenter = cols / 2;
     const cyCenter = rows / 2;
 
@@ -529,15 +529,15 @@ export function useAsciiCamera(audioAmplitudeRef?: { current: number }) {
           let charIdx      = (normalized * charCount) | 0;
           if (charIdx >= charCount) charIdx = charCount - 1;
 
-          if (psyEnabled && psyMorph > 0.001) {
+          if (morphEnabled && morphAmount > 0.001) {
             const dxc  = col - cxCenter;
             const dyc  = row - cyCenter;
             const wave =
-              Math.sin(col * 0.25 + psyTime * 1.3) +
-              Math.sin(row * 0.3  - psyTime * 1.1) +
-              Math.sin((col + row) * 0.18 + psyTime * 0.7) +
-              Math.sin(Math.sqrt(dxc * dxc + dyc * dyc) * 0.22 - psyTime * 1.6);
-            const shift = Math.round(((wave + 4) / 8) * charCount * psyMorph);
+              Math.sin(col * 0.25 + morphTime * 1.3) +
+              Math.sin(row * 0.3  - morphTime * 1.1) +
+              Math.sin((col + row) * 0.18 + morphTime * 0.7) +
+              Math.sin(Math.sqrt(dxc * dxc + dyc * dyc) * 0.22 - morphTime * 1.6);
+            const shift = Math.round(((wave + 4) / 8) * charCount * morphAmount);
             charIdx = ((charIdx + shift) % charCount + charCount) % charCount;
           }
           if (chaosRange > 1) {
@@ -569,28 +569,28 @@ export function useAsciiCamera(audioAmplitudeRef?: { current: number }) {
         crtOpacity = Math.min(0.85, (0.1 + params.crtIntensity * 0.5) + sAmp * params.crtSensitivity * 0.4);
       }
 
-      // DMT param tracking
-      let dmtDx = 0, dmtDy = 0, dmtZoom = 1, dmtSwirl = 0, dmtPersistence = 0.9, dmtBlurPx = 0;
-      if (params.dmtEnabled) {
-        dmtAmpRef.current   += (audioAmp - dmtAmpRef.current) * 0.15;
-        const sAmp      = dmtAmpRef.current;
-        const intensity = params.dmtIntensity;
-        dmtAngleRef.current += (0.1 + sAmp * 1.8) * 0.016;
-        const ang   = dmtAngleRef.current;
-        dmtZoom        = 1 + (0.006 + sAmp * 0.05) * intensity;
-        dmtSwirl       = (0.003 + sAmp * 0.05) * intensity;
+      // Melt param tracking
+      let meltDx = 0, meltDy = 0, meltZoom = 1, meltSwirl = 0, meltPersistence = 0.9, meltBlurPx = 0;
+      if (params.meltEnabled) {
+        meltAmpRef.current   += (audioAmp - meltAmpRef.current) * 0.15;
+        const sAmp      = meltAmpRef.current;
+        const intensity = params.meltIntensity;
+        meltAngleRef.current += (0.1 + sAmp * 1.8) * 0.016;
+        const ang   = meltAngleRef.current;
+        meltZoom        = 1 + (0.006 + sAmp * 0.05) * intensity;
+        meltSwirl       = (0.003 + sAmp * 0.05) * intensity;
         const push  = (1.5 + sAmp * 34) * intensity;
-        dmtDx       = Math.cos(ang) * push;
-        dmtDy       = Math.sin(ang * 1.3) * push;
-        dmtPersistence = 0.9 + intensity * 0.06;
-        dmtBlurPx   = (0.3 + sAmp * 1.4) * intensity;
+        meltDx       = Math.cos(ang) * push;
+        meltDy       = Math.sin(ang * 1.3) * push;
+        meltPersistence = 0.9 + intensity * 0.06;
+        meltBlurPx   = (0.3 + sAmp * 1.4) * intensity;
       }
 
       gpuRenderer.render({
         cellData: cd, cols, rows, charCount,
         cellW, cellH, gridOffX: offsetX, gridOffY: offsetY, W, H,
-        effectiveGlow, psyHueDeg, inverted,
-        dmtEnabled: params.dmtEnabled, dmtDx, dmtDy, dmtZoom, dmtSwirl, dmtPersistence, dmtBlurPx,
+        effectiveGlow, morphHueDeg, inverted,
+        meltEnabled: params.meltEnabled, meltDx, meltDy, meltZoom, meltSwirl, meltPersistence, meltBlurPx,
         crtEnabled: params.crtEnabled, crtScrollY, crtOpacity, crtPeriod,
       });
     }
@@ -625,15 +625,15 @@ export function useAsciiCamera(audioAmplitudeRef?: { current: number }) {
           let charIdx      = (normalized * charCount) | 0;
           if (charIdx >= charCount) charIdx = charCount - 1;
 
-          if (psyEnabled && psyMorph > 0.001) {
+          if (morphEnabled && morphAmount > 0.001) {
             const dxc  = col - cxCenter;
             const dyc  = row - cyCenter;
             const wave =
-              Math.sin(col * 0.25 + psyTime * 1.3) +
-              Math.sin(row * 0.3  - psyTime * 1.1) +
-              Math.sin((col + row) * 0.18 + psyTime * 0.7) +
-              Math.sin(Math.sqrt(dxc * dxc + dyc * dyc) * 0.22 - psyTime * 1.6);
-            const shift = Math.round(((wave + 4) / 8) * charCount * psyMorph);
+              Math.sin(col * 0.25 + morphTime * 1.3) +
+              Math.sin(row * 0.3  - morphTime * 1.1) +
+              Math.sin((col + row) * 0.18 + morphTime * 0.7) +
+              Math.sin(Math.sqrt(dxc * dxc + dyc * dyc) * 0.22 - morphTime * 1.6);
+            const shift = Math.round(((wave + 4) / 8) * charCount * morphAmount);
             charIdx = charIdx + shift;
             charIdx = ((charIdx % charCount) + charCount) % charCount;
           }
@@ -660,7 +660,7 @@ export function useAsciiCamera(audioAmplitudeRef?: { current: number }) {
       ctx.fillRect(0, 0, W, H);
       ctx.globalCompositeOperation = "source-over";
       ctx.globalAlpha = 1;
-      ctx.filter = psyHueDeg ? `hue-rotate(${psyHueDeg.toFixed(1)}deg)` : "none";
+      ctx.filter = morphHueDeg ? `hue-rotate(${morphHueDeg.toFixed(1)}deg)` : "none";
       ctx.drawImage(glow, 0, 0);
       ctx.filter = "none";
 
@@ -670,23 +670,23 @@ export function useAsciiCamera(audioAmplitudeRef?: { current: number }) {
         ctx.save();
         ctx.globalCompositeOperation = "lighter";
         ctx.globalAlpha = Math.min(1, effectiveGlow * 0.9);
-        ctx.filter = `blur(${effectiveGlow * cellH * 1.1}px)${psyHueDeg ? ` hue-rotate(${psyHueDeg.toFixed(1)}deg)` : ""}`;
+        ctx.filter = `blur(${effectiveGlow * cellH * 1.1}px)${morphHueDeg ? ` hue-rotate(${morphHueDeg.toFixed(1)}deg)` : ""}`;
         ctx.drawImage(glow, 0, 0);
         ctx.restore();
       }
 
-      // DMT smudge
-      if (params.dmtEnabled) {
-        if (!dmtBufRef.current) dmtBufRef.current = document.createElement("canvas");
-        const buf = dmtBufRef.current;
+      // Melt smudge
+      if (params.meltEnabled) {
+        if (!meltBufRef.current) meltBufRef.current = document.createElement("canvas");
+        const buf = meltBufRef.current;
         if (buf.width !== W || buf.height !== H) { buf.width = W; buf.height = H; }
         const bctx = buf.getContext("2d");
         if (bctx) {
-          dmtAmpRef.current   += (audioAmp - dmtAmpRef.current) * 0.15;
-          const sAmp      = dmtAmpRef.current;
-          const intensity = params.dmtIntensity;
-          dmtAngleRef.current += (0.1 + sAmp * 1.8) * 0.016;
-          const ang       = dmtAngleRef.current;
+          meltAmpRef.current   += (audioAmp - meltAmpRef.current) * 0.15;
+          const sAmp      = meltAmpRef.current;
+          const intensity = params.meltIntensity;
+          meltAngleRef.current += (0.1 + sAmp * 1.8) * 0.016;
+          const ang       = meltAngleRef.current;
           const zoom      = 1 + (0.006 + sAmp * 0.05) * intensity;
           const swirl     = (0.003 + sAmp * 0.05) * intensity;
           const push      = (1.5 + sAmp * 34) * intensity * dpr;
@@ -707,7 +707,7 @@ export function useAsciiCamera(audioAmplitudeRef?: { current: number }) {
           bctx.save();
           bctx.globalCompositeOperation = "source-over";
           bctx.globalAlpha = 1;
-          bctx.filter = psyHueDeg ? `hue-rotate(${psyHueDeg.toFixed(1)}deg)` : "none";
+          bctx.filter = morphHueDeg ? `hue-rotate(${morphHueDeg.toFixed(1)}deg)` : "none";
           bctx.drawImage(glow, 0, 0);
           bctx.restore();
 
@@ -850,7 +850,7 @@ export function useAsciiCamera(audioAmplitudeRef?: { current: number }) {
   const snapshotPng = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas || !isActive) return;
-    triggerDownload(canvas.toDataURL("image/png"), `asciilens-${Date.now()}.png`);
+    triggerDownload(canvas.toDataURL("image/png"), `typeface-${Date.now()}.png`);
   }, [isActive]);
 
   const snapshotSvg = useCallback(() => {
@@ -913,7 +913,7 @@ export function useAsciiCamera(audioAmplitudeRef?: { current: number }) {
       `</g></svg>`;
 
     const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
-    triggerDownload(url, `asciilens-${Date.now()}.svg`);
+    triggerDownload(url, `typeface-${Date.now()}.svg`);
     URL.revokeObjectURL(url);
   }, [isActive]);
 

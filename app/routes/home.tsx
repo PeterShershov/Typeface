@@ -52,13 +52,13 @@ export default function Home() {
     else startMic();
   }, [isListening, startMic, stopMic]);
 
-  const handleToggleDmt = useCallback(() => {
-    handleParamChange({ dmtEnabled: !params.dmtEnabled });
-  }, [handleParamChange, params.dmtEnabled]);
+  const handleToggleMelt = useCallback(() => {
+    handleParamChange({ meltEnabled: !params.meltEnabled });
+  }, [handleParamChange, params.meltEnabled]);
 
-  const handleTogglePsy = useCallback(() => {
-    handleParamChange({ psyEnabled: !params.psyEnabled });
-  }, [handleParamChange, params.psyEnabled]);
+  const handleToggleMorph = useCallback(() => {
+    handleParamChange({ morphEnabled: !params.morphEnabled });
+  }, [handleParamChange, params.morphEnabled]);
 
   const exitGallery = useCallback(() => setGalleryMode(false), []);
 
@@ -81,8 +81,8 @@ export default function Home() {
           isActive={isActive}
           inverted={params.inverted}
           isMicActive={isListening}
-          dmtActive={params.dmtEnabled}
-          psyActive={params.psyEnabled}
+          meltActive={params.meltEnabled}
+          morphActive={params.morphEnabled}
           controlsOpen={controlsOpen}
           onStart={handleStart}
           onStop={stopCamera}
@@ -90,8 +90,8 @@ export default function Home() {
           onToggleInvert={handleToggleInvert}
           onEnterGallery={() => setGalleryMode(true)}
           onToggleMic={handleToggleMic}
-          onToggleDmt={handleToggleDmt}
-          onTogglePsy={handleTogglePsy}
+          onToggleMelt={handleToggleMelt}
+          onToggleMorph={handleToggleMorph}
           onToggleControls={() => setControlsOpen((o) => !o)}
         />
       )}

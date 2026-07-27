@@ -1,17 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap");
 
 :root {
   /* Windows 95 uses system-style sans; mono kept for ASCII previews */
-  --family-body: 'MS Sans Serif', Tahoma, Geneva, Verdana, 'Segoe UI', sans-serif;
-  --family-mono: 'JetBrains Mono', 'Courier New', monospace;
+  --family-body: "MS Sans Serif", Tahoma, Geneva, Verdana, "Segoe UI", sans-serif;
+  --family-mono: "JetBrains Mono", "Courier New", monospace;
 
-  /* ---- Windows 95 raw palette ---- */
-  --win-desktop: #008080; /* classic teal desktop */
-  --win-face: #c0c0c0; /* silver control face */
-  --win-face-light: #dfdfdf;
-  --win-highlight: #ffffff;
-  --win-shadow: #808080;
-  --win-dark: #000000;
+  /* ---- Windows 95 palette, darkened ---- */
+  --win-desktop: #262626; /* desktop backdrop */
+  --win-face: #3a3a3a; /* control face (was silver #c0c0c0) */
+  --win-face-light: #4d4d4d; /* pressed / active fill */
+  --win-highlight: #6f6f6f; /* light bevel edge */
+  --win-shadow: #1c1c1c; /* dark bevel edge & borders */
+  --win-dark: #e6e6e6; /* ink: text and hard outlines */
+  --win-field: #232323; /* sunken input surfaces */
+  --win-text-dim: #8a8a8a; /* muted, disabled, placeholder text */
   --win-titlebar: #000080; /* active title navy */
   --win-titlebar-grad: linear-gradient(90deg, #000080 0%, #1084d0 100%);
   --win-titlebar-text: #ffffff;
@@ -19,22 +21,10 @@
   --win-selection-text: #ffffff;
 
   /* 3D bevel presets */
-  --bevel-out:
-    inset -1px -1px 0 #000000,
-    inset 1px 1px 0 #ffffff,
-    inset -2px -2px 0 #808080,
-    inset 2px 2px 0 #dfdfdf;
-  --bevel-in:
-    inset 1px 1px 0 #808080,
-    inset -1px -1px 0 #ffffff,
-    inset 2px 2px 0 #000000,
-    inset -2px -2px 0 #dfdfdf;
-  --bevel-out-thin:
-    inset -1px -1px 0 #808080,
-    inset 1px 1px 0 #ffffff;
-  --bevel-in-thin:
-    inset 1px 1px 0 #808080,
-    inset -1px -1px 0 #ffffff;
+  --bevel-out: inset -1px -1px 0 #0d0d0d, inset 1px 1px 0 #6f6f6f, inset -2px -2px 0 #1c1c1c, inset 2px 2px 0 #4d4d4d;
+  --bevel-in: inset 1px 1px 0 #1c1c1c, inset -1px -1px 0 #6f6f6f, inset 2px 2px 0 #0d0d0d, inset -2px -2px 0 #4d4d4d;
+  --bevel-out-thin: inset -1px -1px 0 #1c1c1c, inset 1px 1px 0 #6f6f6f;
+  --bevel-in-thin: inset 1px 1px 0 #1c1c1c, inset -1px -1px 0 #6f6f6f;
 
   /* ---- Semantic aliases (reused across components) ---- */
   --color-bg: var(--win-desktop);
@@ -45,12 +35,12 @@
 
   --color-primary: var(--win-selection);
   --color-primary-dim: var(--win-selection);
-  --color-primary-glow: #d4d0c8;
+  --color-primary-glow: #6f6f6f;
 
-  --color-text: #000000;
-  --color-text-muted: #000000;
-  --color-text-subtle: #404040;
-  --color-text-accent: #000080;
+  --color-text: #e6e6e6;
+  --color-text-muted: #c8c8c8;
+  --color-text-subtle: #8a8a8a;
+  --color-text-accent: #7aa2ff;
 
   /* Win95 has square corners */
   --radius-sm: 0;

@@ -93,7 +93,6 @@
   padding: var(--space-2) var(--space-4);
   font-family: var(--family-body);
   font-size: var(--text-base);
-  font-weight: 600;
   color: var(--win-dark);
   background: var(--win-face);
   box-shadow: var(--bevel-out);

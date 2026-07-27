@@ -11,8 +11,9 @@ import {
   IconPhoto,
   IconVector,
   IconAdjustmentsHorizontal,
-  IconDroplet,
-  IconMushroom,
+  IconSpiral,
+  IconWaveSine,
+  IconBrandGithub,
 } from "@tabler/icons-react";
 import type { ExportFormat } from "~/hooks/use-ascii-camera";
 import styles from "./toolbar.module.css";
@@ -21,8 +22,8 @@ interface ToolbarProps {
   isActive: boolean;
   inverted: boolean;
   isMicActive: boolean;
-  dmtActive: boolean;
-  psyActive: boolean;
+  meltActive: boolean;
+  morphActive: boolean;
   controlsOpen: boolean;
   onStart: () => void;
   onStop: () => void;
@@ -30,8 +31,8 @@ interface ToolbarProps {
   onToggleInvert: () => void;
   onEnterGallery: () => void;
   onToggleMic: () => void;
-  onToggleDmt: () => void;
-  onTogglePsy: () => void;
+  onToggleMelt: () => void;
+  onToggleMorph: () => void;
   onToggleControls: () => void;
 }
 
@@ -39,8 +40,8 @@ export function Toolbar({
   isActive,
   inverted,
   isMicActive,
-  dmtActive,
-  psyActive,
+  meltActive,
+  morphActive,
   controlsOpen,
   onStart,
   onStop,
@@ -48,8 +49,8 @@ export function Toolbar({
   onToggleInvert,
   onEnterGallery,
   onToggleMic,
-  onToggleDmt,
-  onTogglePsy,
+  onToggleMelt,
+  onToggleMorph,
   onToggleControls,
 }: ToolbarProps) {
   const [saveOpen, setSaveOpen] = useState(false);
@@ -77,7 +78,6 @@ export function Toolbar({
         {isActive ? (
           <button className={`${styles.btn} ${styles.btnDanger}`} onClick={onStop} title="Stop camera">
             <IconPlayerStop size={14} />
-            <span>Stop</span>
           </button>
         ) : (
           <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={onStart} title="Start camera">
@@ -132,23 +132,23 @@ export function Toolbar({
         </button>
 
         <button
-          className={`${styles.btn} ${dmtActive ? styles.btnActive : ""}`}
-          onClick={onToggleDmt}
+          className={`${styles.btn} ${meltActive ? styles.btnActive : ""}`}
+          onClick={onToggleMelt}
           disabled={!isActive}
-          title={dmtActive ? "Disable Mode #001" : "Enable Mode #001"}
-          aria-pressed={dmtActive}
+          title={meltActive ? "Disable Mode #001" : "Enable Mode #001"}
+          aria-pressed={meltActive}
         >
-          <IconDroplet size={14} />
+          <IconSpiral size={14} />
         </button>
 
         <button
-          className={`${styles.btn} ${psyActive ? styles.btnActive : ""}`}
-          onClick={onTogglePsy}
+          className={`${styles.btn} ${morphActive ? styles.btnActive : ""}`}
+          onClick={onToggleMorph}
           disabled={!isActive}
-          title={psyActive ? "Disable Mode #002" : "Enable Mode #002"}
-          aria-pressed={psyActive}
+          title={morphActive ? "Disable Mode #002" : "Enable Mode #002"}
+          aria-pressed={morphActive}
         >
-          <IconMushroom size={14} />
+          <IconWaveSine size={14} />
         </button>
 
         <button
@@ -173,6 +173,17 @@ export function Toolbar({
         >
           <IconArrowsMaximize size={14} />
         </button>
+
+        <a
+          className={`${styles.btn} ${styles.linkBtn}`}
+          href="https://github.com/PeterShershov/typeface"
+          target="_blank"
+          rel="noreferrer noopener"
+          title="View source on GitHub"
+          aria-label="View source on GitHub"
+        >
+          <IconBrandGithub size={14} />
+        </a>
       </div>
     </div>
   );

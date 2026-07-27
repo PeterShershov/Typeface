@@ -1,6 +1,6 @@
 /**
  * WebGPU-accelerated ASCII renderer.
- * Instanced glyph quads + GPU bloom + GPU DMT warp + GPU CRT scanlines.
+ * Instanced glyph quads + GPU bloom + GPU Melt warp + GPU CRT scanlines.
  * Gracefully returns null when WebGPU is unavailable.
  */
 
@@ -114,8 +114,8 @@ fn main(@builtin(global_invocation_id) gid: vec3u) {
 }
 `;
 
-/** DMT warp: inverse-transform previous frame and blend fresh glyphs on top */
-const DMT_WGSL = `
+/** Melt warp: inverse-transform previous frame and blend fresh glyphs on top */
+const MELT_WGSL = `
 struct P {
   canvasW: f32, canvasH: f32,
   dx: f32, dy: f32,
@@ -181,18 +181,18 @@ fn hueRot(c: vec3f, deg: f32) -> vec3f {
 }
 `;
 
-/** Final composite: background + glyphs/DMT + additive bloom + CRT scanlines + hue rotation */
+/** Final composite: background + glyphs/Melt + additive bloom + CRT scanlines + hue rotation */
 const COMPOSITE_WGSL = `
 struct U {
   canvasW: f32, canvasH: f32,
   glowStr: f32, hueDeg: f32,
-  inverted: u32, dmtEnabled: u32, crtEnabled: u32,
+  inverted: u32, meltEnabled: u32, crtEnabled: u32,
   crtScrollY: f32, crtPeriod: f32, crtOpacity: f32,
   _p0: f32, _p1: f32,
 }
 @group(0) @binding(0) var<uniform> uni     : U;
 @group(0) @binding(1) var glyphTex : texture_2d<f32>;
-@group(0) @binding(2) var dmtTex   : texture_2d<f32>;
+@group(0) @binding(2) var meltTex   : texture_2d<f32>;
 @group(0) @binding(3) var bloomTex : texture_2d<f32>;
 @group(0) @binding(4) var samp     : sampler;
 
@@ -222,8 +222,8 @@ fn hueRot(c: vec3f, deg: f32) -> vec3f {
   let bg = select(vec3f(0.020, 0.020, 0.020), vec3f(0.929, 0.906, 0.871), uni.inverted != 0u);
 
   var src: vec4f;
-  if (uni.dmtEnabled != 0u) {
-    src = textureSample(dmtTex, samp, in.uv);
+  if (uni.meltEnabled != 0u) {
+    src = textureSample(meltTex, samp, in.uv);
   } else {
     src = textureSample(glyphTex, samp, in.uv);
   }
@@ -261,15 +261,15 @@ export interface RenderInput {
   W: number;
   H: number;
   effectiveGlow: number;
-  psyHueDeg: number;
+  morphHueDeg: number;
   inverted: boolean;
-  dmtEnabled: boolean;
-  dmtDx: number;
-  dmtDy: number;
-  dmtZoom: number;
-  dmtSwirl: number;
-  dmtPersistence: number;
-  dmtBlurPx: number;
+  meltEnabled: boolean;
+  meltDx: number;
+  meltDy: number;
+  meltZoom: number;
+  meltSwirl: number;
+  meltPersistence: number;
+  meltBlurPx: number;
   crtEnabled: boolean;
   crtScrollY: number;
   crtOpacity: number;
@@ -287,14 +287,14 @@ export class WebGPUAsciiRenderer {
   private glyphPipe!: GPURenderPipeline;
   private blurHPipe!: GPUComputePipeline;
   private blurVPipe!: GPUComputePipeline;
-  private dmtPipe!: GPURenderPipeline;
+  private meltPipe!: GPURenderPipeline;
   private compPipe!: GPURenderPipeline;
 
   // Per-size render targets (recreated on resize)
   private glyphTex!: GPUTexture;
   private bloomA!: GPUTexture;
   private bloomB!: GPUTexture;
-  private dmtTex!: [GPUTexture, GPUTexture];
+  private meltTex!: [GPUTexture, GPUTexture];
   private texW = 0;
   private texH = 0;
 
@@ -303,7 +303,7 @@ export class WebGPUAsciiRenderer {
   private cellBufSz = 0;
   private glyphUni!: GPUBuffer; // 48 bytes
   private blurBuf!: GPUBuffer;  // 16 bytes
-  private dmtBuf!: GPUBuffer;   // 48 bytes
+  private meltBuf!: GPUBuffer;   // 48 bytes
   private compBuf!: GPUBuffer;  // 48 bytes
 
   // Glyph atlas texture
@@ -314,12 +314,12 @@ export class WebGPUAsciiRenderer {
   private glyphBG!: GPUBindGroup;
   private blurHBG!: GPUBindGroup;
   private blurVBG!: GPUBindGroup;
-  private dmtBGs!: [GPUBindGroup, GPUBindGroup];
+  private meltBGs!: [GPUBindGroup, GPUBindGroup];
   private compBGs!: [GPUBindGroup, GPUBindGroup];
   private bgsDirty = true;
 
-  // DMT ping-pong index
-  private dmtIdx = 0;
+  // Melt ping-pong index
+  private meltIdx = 0;
 
   constructor(dev: GPUDevice, ctx: GPUCanvasContext, fmt: GPUTextureFormat) {
     this.dev = dev;
@@ -356,12 +356,12 @@ export class WebGPUAsciiRenderer {
       compute: { module: d.createShaderModule({ code: BLUR_V_WGSL }), entryPoint: "main" },
     });
 
-    // DMT warp render pipeline
-    const dmtMod = d.createShaderModule({ code: DMT_WGSL });
-    this.dmtPipe = d.createRenderPipeline({
+    // Melt warp render pipeline
+    const meltMod = d.createShaderModule({ code: MELT_WGSL });
+    this.meltPipe = d.createRenderPipeline({
       layout: "auto",
-      vertex: { module: dmtMod, entryPoint: "vs" },
-      fragment: { module: dmtMod, entryPoint: "fs", targets: [{ format: "rgba8unorm" }] },
+      vertex: { module: meltMod, entryPoint: "vs" },
+      fragment: { module: meltMod, entryPoint: "fs", targets: [{ format: "rgba8unorm" }] },
       primitive: { topology: "triangle-list" },
     });
 
@@ -379,7 +379,7 @@ export class WebGPUAsciiRenderer {
     const d = this.dev;
     this.glyphUni = d.createBuffer({ size: 48, usage: BU.UNIFORM | BU.COPY_DST });
     this.blurBuf  = d.createBuffer({ size: 16, usage: BU.UNIFORM | BU.COPY_DST });
-    this.dmtBuf   = d.createBuffer({ size: 48, usage: BU.UNIFORM | BU.COPY_DST });
+    this.meltBuf   = d.createBuffer({ size: 48, usage: BU.UNIFORM | BU.COPY_DST });
     this.compBuf  = d.createBuffer({ size: 48, usage: BU.UNIFORM | BU.COPY_DST });
     this.cellBufSz = 4096;
     this.cellBuf   = d.createBuffer({ size: this.cellBufSz, usage: BU.STORAGE | BU.COPY_DST });
@@ -427,8 +427,8 @@ export class WebGPUAsciiRenderer {
     this.glyphTex?.destroy();
     this.bloomA?.destroy();
     this.bloomB?.destroy();
-    this.dmtTex?.[0]?.destroy();
-    this.dmtTex?.[1]?.destroy();
+    this.meltTex?.[0]?.destroy();
+    this.meltTex?.[1]?.destroy();
 
     const makeRA  = () => this.dev.createTexture({ size: [w, h], format: "rgba8unorm", usage: TU.RENDER_ATTACHMENT | TU.TEXTURE_BINDING });
     const makeST  = () => this.dev.createTexture({ size: [w, h], format: "rgba8unorm", usage: TU.STORAGE_BINDING   | TU.TEXTURE_BINDING });
@@ -436,11 +436,11 @@ export class WebGPUAsciiRenderer {
     this.glyphTex = makeRA();
     this.bloomA   = makeST();
     this.bloomB   = makeST();
-    this.dmtTex   = [makeRA(), makeRA()];
+    this.meltTex   = [makeRA(), makeRA()];
 
-    // Clear DMT ping-pong textures so first frame starts clean
+    // Clear Melt ping-pong textures so first frame starts clean
     const enc = this.dev.createCommandEncoder();
-    for (const t of this.dmtTex) {
+    for (const t of this.meltTex) {
       const p = enc.beginRenderPass({
         colorAttachments: [{ view: t.createView(), clearValue: { r: 0, g: 0, b: 0, a: 0 }, loadOp: "clear", storeOp: "store" }],
       });
@@ -499,36 +499,36 @@ export class WebGPUAsciiRenderer {
       ],
     });
 
-    // DMT BG[i] reads from dmtTex[i]; render pass writes to dmtTex[1-i]
-    this.dmtBGs = [
+    // Melt BG[i] reads from meltTex[i]; render pass writes to meltTex[1-i]
+    this.meltBGs = [
       d.createBindGroup({
-        layout: this.dmtPipe.getBindGroupLayout(0),
+        layout: this.meltPipe.getBindGroupLayout(0),
         entries: [
-          { binding: 0, resource: this.dmtTex[0].createView() },
+          { binding: 0, resource: this.meltTex[0].createView() },
           { binding: 1, resource: gv },
           { binding: 2, resource: this.samp },
-          { binding: 3, resource: { buffer: this.dmtBuf } },
+          { binding: 3, resource: { buffer: this.meltBuf } },
         ],
       }),
       d.createBindGroup({
-        layout: this.dmtPipe.getBindGroupLayout(0),
+        layout: this.meltPipe.getBindGroupLayout(0),
         entries: [
-          { binding: 0, resource: this.dmtTex[1].createView() },
+          { binding: 0, resource: this.meltTex[1].createView() },
           { binding: 1, resource: gv },
           { binding: 2, resource: this.samp },
-          { binding: 3, resource: { buffer: this.dmtBuf } },
+          { binding: 3, resource: { buffer: this.meltBuf } },
         ],
       }),
     ];
 
-    // Composite BG[i] reads dmtTex[1-i] (the result written when dmtBGs[i] is used)
+    // Composite BG[i] reads meltTex[1-i] (the result written when meltBGs[i] is used)
     this.compBGs = [
       d.createBindGroup({
         layout: this.compPipe.getBindGroupLayout(0),
         entries: [
           { binding: 0, resource: { buffer: this.compBuf } },
           { binding: 1, resource: gv },
-          { binding: 2, resource: this.dmtTex[1].createView() },
+          { binding: 2, resource: this.meltTex[1].createView() },
           { binding: 3, resource: bbV },
           { binding: 4, resource: this.samp },
         ],
@@ -538,7 +538,7 @@ export class WebGPUAsciiRenderer {
         entries: [
           { binding: 0, resource: { buffer: this.compBuf } },
           { binding: 1, resource: gv },
-          { binding: 2, resource: this.dmtTex[0].createView() },
+          { binding: 2, resource: this.meltTex[0].createView() },
           { binding: 3, resource: bbV },
           { binding: 4, resource: this.samp },
         ],
@@ -551,8 +551,8 @@ export class WebGPUAsciiRenderer {
   render(inp: RenderInput): void {
     const {
       cellData, cols, rows, charCount, cellW, cellH, gridOffX, gridOffY, W, H,
-      effectiveGlow, psyHueDeg, inverted,
-      dmtEnabled, dmtDx, dmtDy, dmtZoom, dmtSwirl, dmtPersistence, dmtBlurPx,
+      effectiveGlow, morphHueDeg, inverted,
+      meltEnabled, meltDx, meltDy, meltZoom, meltSwirl, meltPersistence, meltBlurPx,
       crtEnabled, crtScrollY, crtOpacity, crtPeriod,
     } = inp;
 
@@ -590,13 +590,13 @@ export class WebGPUAsciiRenderer {
       d.queue.writeBuffer(this.blurBuf, 0, ab);
     }
 
-    // ── DMT params ────────────────────────────────────────────────────────────
-    if (dmtEnabled) {
+    // ── Melt params ────────────────────────────────────────────────────────────
+    if (meltEnabled) {
       const f32 = new Float32Array(12);
-      f32[0] = W; f32[1] = H; f32[2] = dmtDx; f32[3] = dmtDy;
-      f32[4] = dmtZoom; f32[5] = dmtSwirl; f32[6] = dmtPersistence; f32[7] = dmtBlurPx;
-      f32[8] = psyHueDeg;
-      d.queue.writeBuffer(this.dmtBuf, 0, f32);
+      f32[0] = W; f32[1] = H; f32[2] = meltDx; f32[3] = meltDy;
+      f32[4] = meltZoom; f32[5] = meltSwirl; f32[6] = meltPersistence; f32[7] = meltBlurPx;
+      f32[8] = morphHueDeg;
+      d.queue.writeBuffer(this.meltBuf, 0, f32);
     }
 
     // ── Composite params ──────────────────────────────────────────────────────
@@ -604,9 +604,9 @@ export class WebGPUAsciiRenderer {
       const ab  = new ArrayBuffer(48);
       const f32 = new Float32Array(ab);
       const u32 = new Uint32Array(ab);
-      f32[0] = W; f32[1] = H; f32[2] = glowStr; f32[3] = psyHueDeg;
+      f32[0] = W; f32[1] = H; f32[2] = glowStr; f32[3] = morphHueDeg;
       u32[4] = inverted   ? 1 : 0;
-      u32[5] = dmtEnabled ? 1 : 0;
+      u32[5] = meltEnabled ? 1 : 0;
       u32[6] = crtEnabled ? 1 : 0;
       f32[7] = crtScrollY; f32[8] = crtPeriod; f32[9] = crtOpacity;
       d.queue.writeBuffer(this.compBuf, 0, ab);
@@ -642,19 +642,19 @@ export class WebGPUAsciiRenderer {
       vPass.end();
     }
 
-    // Pass 4: DMT warp (ping-pong)
-    let compIdx = this.dmtIdx;
-    if (dmtEnabled) {
-      const writeTex = this.dmtTex[1 - this.dmtIdx];
+    // Pass 4: Melt warp (ping-pong)
+    let compIdx = this.meltIdx;
+    if (meltEnabled) {
+      const writeTex = this.meltTex[1 - this.meltIdx];
       const pass = enc.beginRenderPass({
         colorAttachments: [{ view: writeTex.createView(), clearValue: { r: 0, g: 0, b: 0, a: 0 }, loadOp: "clear", storeOp: "store" }],
       });
-      pass.setPipeline(this.dmtPipe);
-      pass.setBindGroup(0, this.dmtBGs[this.dmtIdx]);
+      pass.setPipeline(this.meltPipe);
+      pass.setBindGroup(0, this.meltBGs[this.meltIdx]);
       pass.draw(3);
       pass.end();
-      compIdx = this.dmtIdx;
-      this.dmtIdx ^= 1; // flip for next frame
+      compIdx = this.meltIdx;
+      this.meltIdx ^= 1; // flip for next frame
     }
 
     // Pass 5: Composite → canvas
@@ -676,13 +676,13 @@ export class WebGPUAsciiRenderer {
     this.glyphTex?.destroy();
     this.bloomA?.destroy();
     this.bloomB?.destroy();
-    this.dmtTex?.[0]?.destroy();
-    this.dmtTex?.[1]?.destroy();
+    this.meltTex?.[0]?.destroy();
+    this.meltTex?.[1]?.destroy();
     this.atlasTex?.destroy();
     this.cellBuf?.destroy();
     this.glyphUni?.destroy();
     this.blurBuf?.destroy();
-    this.dmtBuf?.destroy();
+    this.meltBuf?.destroy();
     this.compBuf?.destroy();
   }
 }

@@ -21,9 +21,8 @@ export function AsciiCanvas({ canvasRef, isActive, onStart }: AsciiCanvasProps) 
             <p className={styles.introKicker}>a note before you begin</p>
             <div className={styles.introBody}>
               <p>
-                clicking the button below asks permission to use your camera. everything runs locally in your browser.
-                your video is never recorded, saved or sent to any server. the same goes for microphone mode which you
-                can enable from the top bar.
+                your video and sound are never recorded, saved or sent to any server. every frame becomes text in your
+                browser and then disappears.
               </p>
             </div>
             <button type="button" className={styles.playCta} onClick={onStart}>

@@ -8,6 +8,14 @@ import "./styles/global.css";
 import "./styles/theme.css";
 import favicon from "/favicon.svg";
 
+export const meta: Route.MetaFunction = () => [
+  { title: "Typeface" },
+  {
+    name: "description",
+    content: "Your face in type.",
+  },
+];
+
 export const links: Route.LinksFunction = () => [
   {
     rel: "icon",

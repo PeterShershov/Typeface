@@ -42,7 +42,6 @@
 
 .stackLabel {
   font-size: 0.7rem;
-  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: light-dark(#9ca3af, #9ca3af);

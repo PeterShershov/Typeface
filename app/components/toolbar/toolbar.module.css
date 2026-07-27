@@ -49,10 +49,16 @@
 }
 
 .btn:disabled {
-  color: var(--win-shadow);
+  color: var(--win-text-dim);
   text-shadow: 1px 1px 0 var(--win-highlight);
   box-shadow: var(--bevel-out);
   cursor: default;
+}
+
+.linkBtn {
+  box-sizing: border-box;
+  justify-content: center;
+  text-decoration: none;
 }
 
 .saveWrap {
@@ -101,7 +107,6 @@
 
 .btnDanger {
   font-weight: 700;
-  color: #7a0000;
 }
 
 .btnMic {
@@ -120,7 +125,7 @@
     left: 0;
     right: 0;
     z-index: 100;
-    background: rgba(192, 192, 192, 0.92);
+    background: rgba(42, 42, 42, 0.92);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
   }
